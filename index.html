@@ -211,6 +211,11 @@ h2{max-width:none}
 #chat .in{padding-bottom:calc(.7rem + env(safe-area-inset-bottom,0px))}
 .mp{padding:1.2rem}
 }
+.cg{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));margin-top:2rem}
+.cv{margin:0;position:relative}
+.cv video{width:100%;aspect-ratio:9/16;object-fit:cover;background:#000;border:1px solid var(--line);border-radius:6px;display:block}
+.cv figcaption{margin-top:.6rem;display:grid;gap:.2rem}.cv figcaption span{color:var(--dim);font-size:.85rem}
+.cv .sd{position:absolute;top:.6rem;right:.6rem;background:#000b;color:#fff;border:1px solid var(--line);border-radius:4px;padding:.3rem .6rem;font:600 .75rem "IBM Plex Mono",monospace;cursor:pointer}
 </style>
 </head>
 <body>
@@ -295,7 +300,7 @@ h2{max-width:none}
 
 <section class="pg" id="p-servico"><p id="s-back"><a href="#servicos">← Serviços</a></p><h2 id="s-h"></h2><p id="s-d"></p><ul class="ul" id="s-l"></ul><aside class="sci" id="s-s"></aside><div id="s-fig" style="max-width:520px;margin-top:2rem"></div><a class="nx" id="s-n" href="#"><span></span><i></i></a></section>
 
-<section class="pg" id="p-cases"><h2>Nossos <span class="k">cases.</span></h2><p>Estamos editando os vídeos dos nossos melhores trabalhos. Em breve, eles entram aqui.</p></section>
+<section class="pg" id="p-cases"><h2>Nossos <span class="k">cases.</span></h2><p id="cn">Estamos editando os vídeos dos nossos melhores trabalhos. Em breve, eles entram aqui.</p><div class="cg" id="cg"></div></section>
 
 <section class="pg" id="p-processo"><h2>Como a gente <span class="k">trabalha.</span></h2><p>Quatro etapas. Sem enrolação.</p>
 <div class="flow"><i></i>
@@ -323,9 +328,17 @@ h2{max-width:none}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 <script>
-var WA="5500000000000"; /* >>> TROQUE: seu WhatsApp com 55 + DDD + número, só dígitos <<< */
+var WA="5521965367765"; /* WhatsApp da PROLUZE: 55 + DDD + número */
 var reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
-function sendLead(d){try{fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d),keepalive:true}).catch(function(){})}catch(e){}}
+/* >>> CONFIGURAÇÕES: cole aqui quando tiver. Vazio = desligado <<< */
+var GA_ID="";      /* Google Analytics 4, ex.: "G-XXXXXXXXXX" */
+var PIXEL_ID="";   /* Pixel do Meta, só os números */
+var CASES=[];      /* vídeos: {src:"/videos/case1.mp4",t:"Cliente",d:"Resultado em uma frase"} */
+(function(){if(GA_ID){var g=document.createElement("script");g.async=1;g.src="https://www.googletagmanager.com/gtag/js?id="+GA_ID;document.head.appendChild(g);window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag("js",new Date());gtag("config",GA_ID,{send_page_view:false})}
+if(PIXEL_ID){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");fbq("init",PIXEL_ID);fbq("track","PageView")}})();
+function track(n,p){try{if(window.gtag)gtag("event",n==="lead"?"generate_lead":n,p||{});if(window.fbq)fbq("track",n==="lead"?"Lead":"Contact")}catch(e){}}
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest('a[href^="https://wa.me"]');if(a)track("whatsapp_click")});
+function sendLead(d){track("lead",{origem:d&&d.origem});try{fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d),keepalive:true}).catch(function(){})}catch(e){}}
 function wa(t){return"https://wa.me/"+WA+(t?"?text="+encodeURIComponent(t):"")}
 document.querySelectorAll("[data-wa]").forEach(function(a){a.href=wa("Oi! Vim pelo site e quero falar com você.");a.target="_blank";a.rel="noopener"});
 var S=[[255,43,176],[139,92,255],[25,211,255]];
@@ -486,7 +499,7 @@ trafego:["Tráfego pago","Anúncio sem estratégia é dinheiro queimado.","Cada 
 sites:["Sites e landing pages","Seu site tem poucos segundos pra vender.","Páginas rápidas, bonitas e feitas pra uma coisa só: transformar visita em contato.",["Landing pages de alta conversão","Sites imersivos que ninguém esquece","WhatsApp e rastreamento integrados"],"branding",""],
 branding:["Branding","Marca fraca cobra barato.","Identidade que faz o cliente aceitar pagar mais e lembrar de você na hora de comprar.",["Posicionamento e voz da marca","Identidade visual completa","Manual pra tudo ficar consistente"],"social",""]};
 var ids=["home","servicos","cases","processo","ofertas"];
-function route(){var h=(location.hash||"#home").slice(1),pg=h;
+function route(){try{if(window.gtag)gtag("event","page_view",{page_path:location.hash||"#home"});if(window.fbq)fbq("track","ViewContent")}catch(e){}var h=(location.hash||"#home").slice(1),pg=h;
 if(h.indexOf("servico-")==0&&SV[h.slice(8)]){var v=SV[h.slice(8)];pg="servico";document.getElementById("s-h").innerHTML=v[1];document.getElementById("s-d").textContent=v[2];
 document.getElementById("s-l").innerHTML=v[3].map(function(t){return"<li>"+t+"</li>"}).join("");var n=document.getElementById("s-n");n.href="#servico-"+v[4];n.firstChild.textContent="Próxima conexão: "+SV[v[4]][0];document.getElementById("s-s").textContent=v[5]}
 else if(ids.indexOf(h)<0)pg="home";
@@ -496,6 +509,12 @@ fillAll();scrollTo(0,0);onS();if(window.burst)window.burst(5);
 if(window.ScrollTrigger)setTimeout(ScrollTrigger.refresh,100)}
 addEventListener("hashchange",route);
 var mn=document.getElementById("mn");mn.onclick=function(){document.getElementById("menu").classList.toggle("open")};mn.onkeydown=function(e){if(e.key=="Enter")mn.onclick()};
+/* galeria de cases */
+(function(){var g=document.getElementById("cg");if(!g||!CASES.length)return;document.getElementById("cn").style.display="none";
+g.innerHTML=CASES.map(function(c,i){return'<figure class="cv"><video data-src="'+c.src+'" muted loop playsinline preload="none"'+(c.poster?' poster="'+c.poster+'"':"")+'></video><button class="sd" data-i="'+i+'" aria-label="Ligar o som">som</button><figcaption><b>'+(c.t||"")+'</b><span>'+(c.d||"")+'</span></figcaption></figure>'}).join("");
+var io=new IntersectionObserver(function(es){es.forEach(function(e){var v=e.target;if(e.isIntersecting){if(!v.src)v.src=v.dataset.src;v.play().catch(function(){})}else v.pause()})},{threshold:.6});
+g.querySelectorAll("video").forEach(function(v){io.observe(v)});
+g.addEventListener("click",function(e){var b=e.target.closest(".sd");if(!b)return;var v=b.parentNode.querySelector("video");v.muted=!v.muted;b.textContent=v.muted?"som":"mudo"})})();
 route();
 </script>
 </body>
